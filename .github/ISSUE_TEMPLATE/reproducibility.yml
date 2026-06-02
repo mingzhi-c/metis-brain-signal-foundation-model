@@ -1,0 +1,33 @@
+name: Reproducibility report
+description: Report a problem reproducing an experiment or benchmark.
+title: "[Reproducibility] "
+labels: ["reproducibility"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What result or behavior could not be reproduced?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, package versions, GPU, and CUDA version.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command
+      description: Paste the exact command or script invocation.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste relevant logs. Do not include private data.
+      render: text

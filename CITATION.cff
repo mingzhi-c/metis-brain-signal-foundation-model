@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "A Language-guided Multimodal Foundation Model for Zero-shot and Multi-task Brain Signal Analysis"
+message: "If you use METIS, please cite this work. Final publication metadata is pending."
+type: article
+authors:
+  - family-names: Chen
+    given-names: Mingzhi
+  - family-names: Gui
+    given-names: Yiyu
+  - family-names: Luo
+    given-names: Guibo
+  - family-names: Yang
+    given-names: Yuchao
+year: 2026
+repository-code: "https://github.com/mingzhi-c/metis-brain-signal-foundation-model"
+abstract: "METIS is a language-guided multimodal foundation model for zero-shot and multi-task brain signal analysis."
