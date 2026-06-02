@@ -1,0 +1,24 @@
+name: Research question
+description: Ask a question about METIS, datasets, prompts, or benchmarks.
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+    validations:
+      required: true
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Model architecture
+        - Dataset preprocessing
+        - Zero-shot evaluation
+        - Few-shot evaluation
+        - Cross-dataset transfer
+        - Model release
+        - Other
