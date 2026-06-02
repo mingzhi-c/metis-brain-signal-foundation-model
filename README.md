@@ -92,6 +92,7 @@ General-purpose multimodal models often show thematic bias or modality confusion
 </p>
 
 More details are available in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+High-resolution PDF versions of the manuscript figures are available in [assets/pdf](assets/pdf).
 
 ## Repository Map
 
