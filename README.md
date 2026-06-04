@@ -1,26 +1,28 @@
 <div align="center">
 
-<img src="assets/metis_banner.png" alt="METIS banner: language-guided multimodal foundation model for brain signal analysis" width="100%">
+<img src="assets/metis_wordmark.svg" alt="METIS wordmark" width="520">
 
-# METIS
+### A Language-guided Multimodal Foundation Model for Zero-shot and Multi-task Brain Signal Analysis
 
-**A Language-guided Multimodal Foundation Model for Zero-shot and Multi-task Brain Signal Analysis**
+[![Paper](https://img.shields.io/badge/Paper-coming%20soon-15395b?style=flat-square)](#citation)
+[![Project Page](https://img.shields.io/badge/Project%20Page-planned-0f766e?style=flat-square)](docs/SHOWCASE_PLAN.md#project-page)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-planned-b85c38?style=flat-square)](docs/SHOWCASE_PLAN.md#demo-video)
+[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-planned-f6b43f?style=flat-square)](MODEL_ZOO.md)
+[![ModelScope](https://img.shields.io/badge/ModelScope-planned-6b5bd6?style=flat-square)](MODEL_ZOO.md)
+[![License](https://img.shields.io/badge/License-pending-6b7280?style=flat-square)](LICENSE_PENDING.md)
 
-[![Paper](https://img.shields.io/badge/Paper-coming%20soon-2f6f8f?style=for-the-badge)](#citation)
-[![Weights](https://img.shields.io/badge/Weights-upon%20publication-5b8def?style=for-the-badge)](MODEL_ZOO.md)
-[![License](https://img.shields.io/badge/License-pending-lightgrey?style=for-the-badge)](LICENSE_PENDING.md)
-[![Brain Signals](https://img.shields.io/badge/EEG%20%2B%20iEEG-70k%2B%20hours-0f766e?style=for-the-badge)](docs/DATASETS.md)
+<img src="assets/metis_hero.svg" alt="METIS language-signal alignment overview" width="100%">
 
-METIS aligns heterogeneous brain signals with natural-language instructions, turning neural-state assessment and disease identification into a unified Signal-QA problem.
+**METIS aligns heterogeneous brain signals with natural-language instructions, turning neural-state assessment and disease identification into a unified Signal-QA problem.**
 
-[Overview](#overview) | [Highlights](#highlights) | [Benchmarks](#benchmark-snapshots) | [Datasets](docs/DATASETS.md) | [Model Card](docs/MODEL_CARD.md) | [Model Zoo](MODEL_ZOO.md) | [Citation](#citation)
+[Overview](#overview) | [Highlights](#highlights) | [Benchmarks](#benchmark-snapshots) | [Release Roadmap](#release-roadmap) | [Datasets](docs/DATASETS.md) | [Model Card](docs/MODEL_CARD.md) | [Model Zoo](MODEL_ZOO.md) | [Citation](#citation)
 
 </div>
 
 ## News
 
 - **Release plan.** Code, checkpoints, and inference examples will be organized for a public release after publication review.
-- **Repository polish.** This README and the companion docs are prepared as the public-facing package layer; model code remains unchanged.
+- **Showcase plan.** The repository is prepared for a staged release with paper links, a project page, demo video, Hugging Face / ModelScope cards, and cleaned inference examples. See [docs/SHOWCASE_PLAN.md](docs/SHOWCASE_PLAN.md).
 
 ## Overview
 
@@ -94,11 +96,27 @@ General-purpose multimodal models often show thematic bias or modality confusion
 More details are available in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 High-resolution PDF versions of the manuscript figures are available in [assets/pdf](assets/pdf).
 
+## Release Roadmap
+
+<p align="center">
+  <img src="assets/demo_teaser.svg" alt="METIS demo video teaser" width="82%">
+</p>
+
+| Surface | Role | Status |
+|---|---|---|
+| Paper / arXiv / DOI | Official citation and technical report | Planned after publication metadata is available |
+| Project page | Polished public landing page with figures, demo clip, and benchmark highlights | Planned |
+| Demo video | Short Signal-QA walkthrough for GitHub, project page, and model hubs | Storyboard prepared |
+| Hugging Face | Model card, collection, checkpoint release, and optional Space | Template prepared in [docs/HF_MODEL_CARD_TEMPLATE.md](docs/HF_MODEL_CARD_TEMPLATE.md) |
+| ModelScope | China-accessible mirror for model assets and demo materials | Planned |
+
 ## Repository Map
 
 ```text
 metis-brain-signal-foundation-model/
 |-- assets/                 # README figures and social preview assets
+|   |-- metis_wordmark.svg   # project wordmark
+|   |-- metis_hero.svg       # README hero visual
 |-- docs/                   # model, dataset, and benchmark documentation
 |-- MODEL_ZOO.md            # checkpoint release table and usage status
 |-- README.md               # public-facing project homepage
