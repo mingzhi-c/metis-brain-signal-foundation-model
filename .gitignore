@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+
+# Local data, checkpoints, logs, and experiment outputs should stay outside
+# the public repository.
+data/
+datasets/
+checkpoints/
+runs/
+outputs/
+wandb/
+
+# Local environment files.
+.env
+.venv/
+venv/
