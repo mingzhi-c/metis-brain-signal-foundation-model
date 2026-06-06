@@ -1,106 +1,140 @@
-import torch
-from Metis import Metis
-from tqdm import tqdm
-from torch.utils.data import DataLoader
-import torch.nn.functional as F
-from torch.utils.data.dataset import ConcatDataset
+"""
+METIS pretraining pseudocode.
+
+This file intentionally keeps only the public training logic. It does not
+include private paths, dataset-specific loaders, subject metadata, or
+redistribution-restricted preprocessing details.
+"""
+
 import argparse
-from torch.utils.tensorboard import SummaryWriter
-torch.backends.cuda.matmul.allow_tf32 = True
-torch.backends.cudnn.allow_tf32 = True
-torch.cuda.set_device(0)
-from dataset import *
-import logging
-logging.basicConfig(format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO, datefmt="%I:%M:%S")
+
+import torch
+import torch.nn.functional as F
+
+from METIS import Metis, MetisConfig
+
+
+class SignalInstructionDataset(torch.utils.data.Dataset):
+    """Pseudocode dataset interface for signal-instruction pretraining.
+
+    Expected output per sample:
+      signal: Tensor shaped [channels, time]
+      input_ids: tokenized prompt and answer input ids
+      labels: token labels where prompt and padding positions are masked as -100
+
+    Implementers should provide their own compliant data loader outside this
+    public example. Do not commit private file paths or restricted data records.
+    """
+
+    def __init__(self, manifest_path, tokenizer_name, max_text_length):
+        self.manifest_path = manifest_path
+        self.tokenizer_name = tokenizer_name
+        self.max_text_length = max_text_length
+        self.samples = self._load_manifest(manifest_path)
+
+    def _load_manifest(self, manifest_path):
+        # Read a sanitized manifest that only contains allowed sample pointers
+        # and task templates. This placeholder deliberately omits dataset details.
+        raise NotImplementedError("Provide a sanitized manifest loader.")
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, index):
+        # 1. Load one signal segment from an approved local source.
+        # 2. Apply public preprocessing: resampling, normalization, channel mapping.
+        # 3. Build a natural-language instruction and canonical target answer.
+        # 4. Tokenize prompt + answer and mask prompt tokens in labels.
+        raise NotImplementedError("Return signal, input_ids, labels.")
+
 
 def train(args):
-    logger = SummaryWriter(os.path.join("/data/chenmingzhi/MambaBrain/logger", 'Metis_V8'))
-    model = Metis(n_layers=12, dim=512)
-    model = model.cuda()
-    dataset_0 = SleepEDF(folder_path='')
-    dataset_1 = SHHSPretrain(root='')
-    dataset_2 = HMC(folder_path='')
-    dataset_3 = ShuDatasetPretrain(folder_path='')
-    dataset_4 = AlzheimerDataset()
-    dataset_5 = ADauditory(folder_path='')
-    dataset_6 = RestEyesOpen()
-    dataset_7 = BrainLat(folder_path='')
-    dataset_8 = TDBrain(folder_path='', label_dict_path='')
-    dataset_9 = CHBMITPretrain(root='')
-    dataset_10 = SeizelT2Pretrain(root='')
-    dataset_11 = HUP()
-    dataset_12 = SWEC_ETHZ(folder_path='')
-    dataset_13 = FNUSA(folder_path='')
-    dataset_14 = KaggleIEEGEpilepsy()
-    dataset_15 = TUABPretrain(root='')
-    dataset_16 = TUEVPretrain(root='')
-    dataset_17 = PhysionetMI()
-    dataset_18 = TUEPPretrain(root='')
-    dataset_19 = TUSZPretrain(folder_path='', label_dict_path='')
-    dataset = ConcatDataset(
-        [dataset_0, dataset_1, dataset_2, dataset_3, dataset_4, dataset_5, dataset_6, dataset_7, dataset_8, dataset_9,
-         dataset_10, dataset_11, dataset_12, dataset_13, dataset_14, dataset_15, dataset_16, dataset_17, dataset_18, dataset_19
-         ])
-    train_size = [len(dataset_0), len(dataset_1), len(dataset_2), len(dataset_3), len(dataset_4), len(dataset_5),
-                  len(dataset_6), len(dataset_7), len(dataset_8), len(dataset_9), len(dataset_10), len(dataset_11),
-                  len(dataset_12), len(dataset_13), len(dataset_14), len(dataset_15), len(dataset_16), len(dataset_17),
-                  len(dataset_18), len(dataset_19)]
-    sequential_datasets_idx = None
-    loader = DataLoader(dataset=dataset, batch_size=args.batch_size,
-                        sampler=SchedulerSampler(dataset=dataset,
-                                                 largest_dataset_size=max(train_size), batch_size=args.batch_size,
-                                                 sequential_datasets_idx=sequential_datasets_idx), shuffle=False,
-                        drop_last=True, num_workers=args.num_workers)
-    optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=args.learning_rate, weight_decay=0.1)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=30000)
-    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
-    l = len(loader)
+    device = torch.device(args.device)
+    config = MetisConfig()
+    model = Metis(config).to(device)
+
+    dataset = SignalInstructionDataset(
+        manifest_path=args.manifest,
+        tokenizer_name=args.tokenizer,
+        max_text_length=args.max_text_length,
+    )
+    loader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=args.num_workers,
+        drop_last=True,
+    )
+
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=args.learning_rate,
+        weight_decay=args.weight_decay,
+    )
+    scaler = torch.cuda.amp.GradScaler(enabled=args.mixed_precision)
+
+    model.train()
+    optimizer.zero_grad(set_to_none=True)
+
     for epoch in range(args.epochs):
-        print("epoch:", epoch)
-        pbar = tqdm(loader)
-        total_loss = 0
-        total_ntp_loss = 0
-        total_aux_loss = 0
-        for i, (signal, ids, label, y) in enumerate(pbar):
-            signal = augmentation_new(signal)
-            signal = signal.to(args.device)
-            ids = ids.to(args.device)
-            label = label.to(args.device)
-            with torch.cuda.amp.autocast():
-                logits, aux_loss = model(signal, ids[:, :-1])
-                loss = F.cross_entropy(logits.contiguous().view(-1, logits.size(-1)), label[:, 1:].contiguous().view(-1), ignore_index=-100, reduction='mean')
-            total_loss = total_loss + loss.item() + aux_loss.item()
-            total_ntp_loss = total_ntp_loss + loss.item()
-            total_aux_loss = total_aux_loss + aux_loss.item()
-            scaler.scale(loss+aux_loss).backward()
-            scheduler.step()
-            if (i + 1) % args.accumulation_steps == 0:
+        for step, batch in enumerate(loader):
+            signal, input_ids, labels = batch
+            signal = signal.to(device)
+            input_ids = input_ids.to(device)
+            labels = labels.to(device)
+
+            # Teacher forcing: the model receives all but the last text token
+            # and predicts the next token for answer positions only.
+            decoder_input_ids = input_ids[:, :-1]
+            target_labels = labels[:, 1:]
+
+            with torch.cuda.amp.autocast(enabled=args.mixed_precision):
+                logits, aux_loss = model(
+                    signal,
+                    decoder_input_ids,
+                    return_aux_loss=True,
+                )
+                lm_loss = F.cross_entropy(
+                    logits.reshape(-1, logits.size(-1)),
+                    target_labels.reshape(-1),
+                    ignore_index=-100,
+                )
+                loss = lm_loss + args.aux_loss_weight * aux_loss
+
+            scaler.scale(loss / args.gradient_accumulation_steps).backward()
+
+            if (step + 1) % args.gradient_accumulation_steps == 0:
                 scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
                 scaler.step(optimizer)
                 scaler.update()
                 optimizer.zero_grad(set_to_none=True)
-                pbar.set_postfix(total_loss=total_loss, total_ntp_loss=total_ntp_loss, total_aux_loss=total_aux_loss)
-                logger.add_scalar("total_loss", total_loss, global_step=epoch * l + i)
-                logger.add_scalar("total_ntp_loss", total_ntp_loss, global_step=epoch * l + i)
-                logger.add_scalar("total_aux_loss", total_aux_loss, global_step=epoch * l + i)
-                total_loss = 0
-                total_ntp_loss = 0
-                total_aux_loss = 0
 
-            if i % 100000 == 0:
-                torch.save(model.state_dict(), os.path.join("", f"Metis{epoch}_{i}.pt"))
+            # Public releases should log aggregate losses only. Avoid committing
+            # sample identifiers, private paths, subject metadata, or raw labels.
+
+        # Save checkpoints to a user-provided output directory.
+        # torch.save(model.state_dict(), args.output_checkpoint)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="METIS pretraining pseudocode")
+    parser.add_argument("--manifest", type=str, default="path/to/sanitized_manifest.jsonl")
+    parser.add_argument("--tokenizer", type=str, default="path/to/tokenizer")
+    parser.add_argument("--output_checkpoint", type=str, default="checkpoints/metis.pt")
+    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--batch_size", type=int, default=256)
+    parser.add_argument("--learning_rate", type=float, default=2e-4)
+    parser.add_argument("--weight_decay", type=float, default=0.1)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=20)
+    parser.add_argument("--grad_clip", type=float, default=1.0)
+    parser.add_argument("--aux_loss_weight", type=float, default=1.0)
+    parser.add_argument("--max_text_length", type=int, default=512)
+    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--mixed_precision", action="store_true")
+    parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
+    return parser.parse_args()
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Metis Train")
-    parser.add_argument("--epochs", type=int, default=2, help="Number of epochs")
-    parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
-    parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate")
-    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu",
-                        help="Device to use")
-    parser.add_argument("--dtype", type=str, default="bfloat16", help="Data type")
-    parser.add_argument("--num_workers", type=int, default=4, help="Number of workers for data loading")
-    parser.add_argument("--grad_clip", type=float, default=1.0, help="Gradient clipping threshold")
-    parser.add_argument("--accumulation_steps", type=int, default=20, help="Gradient accumulation steps")
-    args = parser.parse_args()
-    train(args)
+    train(parse_args())

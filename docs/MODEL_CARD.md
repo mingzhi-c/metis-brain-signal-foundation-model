@@ -15,7 +15,7 @@ METIS is a language-guided multimodal foundation model for brain-signal analysis
 - 8 routed experts and 1 shared expert in MoE layers
 
 <p align="center">
-  <img src="../assets/universal_signal_encoder.png" alt="Universal signal encoder architecture" width="82%">
+  <img src="../assets/metis_hero.svg" alt="METIS repository overview" width="82%">
 </p>
 
 ## Intended Use
@@ -31,7 +31,7 @@ METIS is a research model and should not be used as a standalone clinical diagno
 
 ## Known Limitations
 
-- public datasets may underrepresent rare diseases, acquisition hardware, and global populations
+- public or private evaluation sources may underrepresent rare diseases, acquisition hardware, and global populations
 - downstream performance can depend on preprocessing, channel availability, and segment duration
 - open-ended Signal-QA requires careful evaluation to avoid plausible but clinically incorrect text
 - model weights and license terms are pending final publication decisions

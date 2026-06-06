@@ -1,65 +1,119 @@
-from Metis import Metis
+"""
+METIS zero-shot evaluation pseudocode.
+
+This file demonstrates the public evaluation logic only. It intentionally omits
+dataset names, private paths, sample identifiers, and restricted preprocessing.
+"""
+
+import argparse
+
 import torch
-from torch.utils.data import DataLoader
-from tqdm import tqdm
 import torch.nn.functional as F
-from pyhealth.metrics.binary import binary_metrics_fn
-from pyhealth.metrics import multiclass_metrics_fn
 
-from  dataset import ISRUC, Dreams, IEDS, Mayo, SanDiego, MDD, ADFSU, ADHD_Adult, ADHD_Children, Schizophrenia28
+from METIS import Metis, MetisConfig
 
 
-def get_metric(num_classes, y_true, y_prob):
-    y_true = y_true.cpu().numpy()
-    if num_classes == 2:
-        all_metrics = ["roc_auc"]
-        y_prob = F.softmax(y_prob, dim=-1)[:, 1].cpu().numpy()
-        metrics = binary_metrics_fn(y_true, y_prob, metrics=all_metrics)
-        return metrics['roc_auc']
-    else:
-        all_metrics = ["roc_auc_macro_ovo"]
-        y_prob = F.softmax(y_prob, dim=-1).cpu().numpy()
-        metrics = multiclass_metrics_fn(y_true, y_prob, metrics=all_metrics)
-        return metrics['roc_auc_macro_ovo']
+class ZeroShotSignalQADataset(torch.utils.data.Dataset):
+    """Pseudocode dataset interface for zero-shot Signal-QA evaluation.
 
-model = Metis(n_layers=8, dim=512)
-device = 'cuda:0'
-model_path = '/Metis_1_0.pt'
-model.load_state_dict(torch.load(model_path, map_location="cpu"))
-model = model.to(device).eval()
-test_dataset = ISRUC(folder_path='', n=1, type='test')
-#test_dataset = Dreams(folder_path='', n=1, type='test')
-#test_dataset = IEDS(folder_path='', n=1, type='test')
-#test_dataset = Mayo(folder_path='', n=1, type='test')
-#test_dataset = MDD(folder_path='', n=1, type='test')
-#test_dataset = ADFSU(folder_path='', n=1, type='test')
-#test_dataset = ADHD_Adult(folder_path='', n=1, type='test')
-#test_dataset = ADHD_Children(folder_path='', n=1, type='test')
-#test_dataset = Schizophrenia28(folder_path='', n=1, type='test')
-#test_dataset = AdoSchizophrenia(folder_path='', n=1, type='test')
-#test_dataset = RatEpilepsy(folder_path='', n=1, type='test')
-#test_dataset = Siena(folder_path='', n=1, type='test')
-#test_dataset = APAVA(folder_path='', n=1, type='test')
-#test_dataset = NMTAB(type='test')
-#test_dataset = SEE(n=1, type='test')
-num_classes = len(test_dataset.options)
-dataloader = DataLoader(test_dataset, batch_size=128, drop_last=False)
-all_probs = []
-all_labels = []
+    Expected output per sample:
+      signal: Tensor shaped [channels, time]
+      prompt_ids: tokenized question prefix
+      option_token_ids: token ids for candidate answers such as A/B/C/D
+      label: integer index of the correct option
 
-with torch.no_grad():
-    for signal, input_ids, option_token_ids, Y in tqdm(dataloader):
-        signal = signal.to(device)
-        input_ids = input_ids.to(device)
-        option_token_ids = option_token_ids.to(device)
-        Y = Y.to(device)
-        outputs = model(signal, input_ids)
-        last_token_logits = outputs[:, -1, :]
-        option_logits = last_token_logits.gather(1, option_token_ids)
-        all_probs.append(option_logits)
-        all_labels.append(Y)
+    Public code should use sanitized manifests and must not expose private
+    subject metadata, raw file locations, or restricted dataset-specific logic.
+    """
 
-all_probs = torch.cat(all_probs)
-all_labels = torch.cat(all_labels)
-roc_auc = get_metric(num_classes=num_classes, y_true=all_labels, y_prob=all_probs)
-print('roc_auc:', roc_auc)
+    def __init__(self, manifest_path, tokenizer_name):
+        self.manifest_path = manifest_path
+        self.tokenizer_name = tokenizer_name
+        self.samples = self._load_manifest(manifest_path)
+
+    def _load_manifest(self, manifest_path):
+        # Load only allowed evaluation metadata from a sanitized manifest.
+        raise NotImplementedError("Provide a sanitized evaluation manifest loader.")
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, index):
+        # 1. Load and preprocess one signal segment.
+        # 2. Build the natural-language question.
+        # 3. Tokenize the question prefix.
+        # 4. Map each candidate answer to its first answer token.
+        raise NotImplementedError("Return signal, prompt_ids, option_token_ids, label.")
+
+
+def compute_zero_shot_scores(model, signal, prompt_ids, option_token_ids):
+    """Score candidate answers with next-token logits."""
+
+    logits = model(signal, prompt_ids)
+    next_token_logits = logits[:, -1, :]
+    option_logits = next_token_logits.gather(dim=1, index=option_token_ids)
+    return option_logits
+
+
+def evaluate(args):
+    device = torch.device(args.device)
+    config = MetisConfig()
+    model = Metis(config).to(device)
+
+    checkpoint = torch.load(args.checkpoint, map_location="cpu")
+    model.load_state_dict(checkpoint)
+    model.eval()
+
+    dataset = ZeroShotSignalQADataset(
+        manifest_path=args.manifest,
+        tokenizer_name=args.tokenizer,
+    )
+    loader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+    )
+
+    all_probs = []
+    all_labels = []
+
+    with torch.no_grad():
+        for signal, prompt_ids, option_token_ids, labels in loader:
+            signal = signal.to(device)
+            prompt_ids = prompt_ids.to(device)
+            option_token_ids = option_token_ids.to(device)
+            labels = labels.to(device)
+
+            option_logits = compute_zero_shot_scores(
+                model=model,
+                signal=signal,
+                prompt_ids=prompt_ids,
+                option_token_ids=option_token_ids,
+            )
+            all_probs.append(F.softmax(option_logits, dim=-1).cpu())
+            all_labels.append(labels.cpu())
+
+    all_probs = torch.cat(all_probs, dim=0)
+    all_labels = torch.cat(all_labels, dim=0)
+
+    # Replace this placeholder with an approved metric implementation.
+    # Common choices include accuracy, macro AUROC, or task-specific metrics.
+    predictions = all_probs.argmax(dim=-1)
+    accuracy = (predictions == all_labels).float().mean().item()
+    print({"zero_shot_accuracy": accuracy})
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="METIS zero-shot evaluation pseudocode")
+    parser.add_argument("--manifest", type=str, default="path/to/sanitized_eval_manifest.jsonl")
+    parser.add_argument("--tokenizer", type=str, default="path/to/tokenizer")
+    parser.add_argument("--checkpoint", type=str, default="checkpoints/metis.pt")
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    evaluate(parse_args())

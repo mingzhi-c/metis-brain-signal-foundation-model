@@ -56,7 +56,7 @@ METIS is a research model and is not a standalone clinical diagnostic system. Cl
 | Layers | 12 |
 | Hidden size | 512 |
 | MoE | 8 routed experts + 1 shared expert |
-| Pretraining corpus | 70,000+ hours, 11,000+ subjects, 20 datasets |
+| Pretraining corpus | Large-scale EEG/iEEG instruction corpus; details pending approved release |
 
 ## Example
 
@@ -69,9 +69,9 @@ Answer: Alzheimer's disease
 ## Citation
 
 ```bibtex
-@article{chen2026metis,
+@article{metis2026,
   title   = {A Language-guided Multimodal Foundation Model for Zero-shot and Multi-task Brain Signal Analysis},
-  author  = {Chen, Mingzhi and Gui, Yiyu and Luo, Guibo and Yang, Yuchao},
+  author  = {{METIS Contributors}},
   year    = {2026},
   note    = {Manuscript; publication metadata pending}
 }
