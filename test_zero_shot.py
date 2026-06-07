@@ -1,9 +1,4 @@
-"""
-METIS zero-shot evaluation pseudocode.
-
-This file demonstrates the public evaluation logic only. It intentionally omits
-dataset names, private paths, sample identifiers, and restricted preprocessing.
-"""
+"""METIS zero-shot Signal-QA evaluation pseudocode."""
 
 import argparse
 
@@ -21,9 +16,6 @@ class ZeroShotSignalQADataset(torch.utils.data.Dataset):
       prompt_ids: tokenized question prefix
       option_token_ids: token ids for candidate answers such as A/B/C/D
       label: integer index of the correct option
-
-    Public code should use sanitized manifests and must not expose private
-    subject metadata, raw file locations, or restricted dataset-specific logic.
     """
 
     def __init__(self, manifest_path, tokenizer_name):
@@ -32,8 +24,8 @@ class ZeroShotSignalQADataset(torch.utils.data.Dataset):
         self.samples = self._load_manifest(manifest_path)
 
     def _load_manifest(self, manifest_path):
-        # Load only allowed evaluation metadata from a sanitized manifest.
-        raise NotImplementedError("Provide a sanitized evaluation manifest loader.")
+        # Read a sanitized manifest with signal_uri, question, options, and label.
+        raise NotImplementedError("Implement evaluation manifest loading.")
 
     def __len__(self):
         return len(self.samples)
@@ -97,8 +89,7 @@ def evaluate(args):
     all_probs = torch.cat(all_probs, dim=0)
     all_labels = torch.cat(all_labels, dim=0)
 
-    # Replace this placeholder with an approved metric implementation.
-    # Common choices include accuracy, macro AUROC, or task-specific metrics.
+    # Common metrics include accuracy, macro AUROC, and task-specific scores.
     predictions = all_probs.argmax(dim=-1)
     accuracy = (predictions == all_labels).float().mean().item()
     print({"zero_shot_accuracy": accuracy})

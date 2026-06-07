@@ -1,10 +1,4 @@
-"""
-METIS pretraining pseudocode.
-
-This file intentionally keeps only the public training logic. It does not
-include private paths, dataset-specific loaders, subject metadata, or
-redistribution-restricted preprocessing details.
-"""
+"""METIS signal-instruction pretraining pseudocode."""
 
 import argparse
 
@@ -21,9 +15,6 @@ class SignalInstructionDataset(torch.utils.data.Dataset):
       signal: Tensor shaped [channels, time]
       input_ids: tokenized prompt and answer input ids
       labels: token labels where prompt and padding positions are masked as -100
-
-    Implementers should provide their own compliant data loader outside this
-    public example. Do not commit private file paths or restricted data records.
     """
 
     def __init__(self, manifest_path, tokenizer_name, max_text_length):
@@ -33,16 +24,15 @@ class SignalInstructionDataset(torch.utils.data.Dataset):
         self.samples = self._load_manifest(manifest_path)
 
     def _load_manifest(self, manifest_path):
-        # Read a sanitized manifest that only contains allowed sample pointers
-        # and task templates. This placeholder deliberately omits dataset details.
-        raise NotImplementedError("Provide a sanitized manifest loader.")
+        # Read a sanitized manifest with signal_uri, task_type, question, and answer.
+        raise NotImplementedError("Implement manifest loading.")
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, index):
-        # 1. Load one signal segment from an approved local source.
-        # 2. Apply public preprocessing: resampling, normalization, channel mapping.
+        # 1. Load one signal segment from the manifest.
+        # 2. Apply preprocessing: resampling, normalization, channel mapping.
         # 3. Build a natural-language instruction and canonical target answer.
         # 4. Tokenize prompt + answer and mask prompt tokens in labels.
         raise NotImplementedError("Return signal, input_ids, labels.")
@@ -110,10 +100,7 @@ def train(args):
                 scaler.update()
                 optimizer.zero_grad(set_to_none=True)
 
-            # Public releases should log aggregate losses only. Avoid committing
-            # sample identifiers, private paths, subject metadata, or raw labels.
-
-        # Save checkpoints to a user-provided output directory.
+        # Save checkpoints to the configured output path.
         # torch.save(model.state_dict(), args.output_checkpoint)
 
 
