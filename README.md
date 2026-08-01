@@ -9,7 +9,7 @@
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-checkpoint-f6b43f?style=flat-square)](https://huggingface.co/cccmmmzzz/metis-brain-signal-foundation-model)
 [![License](https://img.shields.io/badge/License-Apache--2.0-6b7280?style=flat-square)](LICENSE)
 
-<img src="assets/metis_hero.svg" alt="METIS language-signal alignment overview" width="100%">
+<img src="assets/metis_overview.png" alt="METIS language-guided brain foundation model overview" width="100%">
 
 **METIS aligns heterogeneous brain signals with natural-language instructions, turning neural-state assessment and disease identification into a unified Signal-QA problem.**
 
