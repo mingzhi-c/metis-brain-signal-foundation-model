@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="assets/metis_wordmark.svg" alt="METIS wordmark" width="520">
-
 ### A Language-Guided Multimodal Foundation Model for Zero-Shot and Multi-Task Brain Signal Analysis
 
 [![Paper](https://img.shields.io/badge/Paper-Wiley-15395b?style=flat-square)](https://doi.org/10.1002/aisy.70486)
