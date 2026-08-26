@@ -132,6 +132,12 @@ print(y.shape)  # torch.Size([1, 5])
 
 Detailed benchmark figures and per-dataset result tables are kept in the manuscript materials. The repository summarizes the evaluation modes and main claims in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
+## Discussion and Collaboration
+
+We believe that integrating language with multimodal brain signals has significant potential for building general-purpose foundation models for neuroscience and healthcare. Many important questions in multimodal alignment, cross-dataset generalization, instruction tuning, and interpretable neural-language modeling remain to be explored.
+
+If you are interested in this direction or would like to discuss it further, please feel free to contact Mingzhi Chen at Mingzhi.Chen@mbzuai.ac.ae. For questions about the code or reproducibility, please open a GitHub issue.
+
 ## Citation
 
 If METIS supports your research, please cite the published article:
@@ -149,7 +155,3 @@ If METIS supports your research, please cite the published article:
   doi       = {10.1002/aisy.70486}
 }
 ```
-
-## Contact
-
-For research questions, please open a GitHub issue or contact the corresponding authors listed in the paper.
