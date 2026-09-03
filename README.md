@@ -17,8 +17,9 @@
 
 ## News
 
-- **July 23, 2026 — Paper published.** METIS is now available in *Advanced Intelligent Systems*. Read the [article](https://doi.org/10.1002/aisy.70486).
-- **Checkpoint release.** The METIS checkpoint is available on [Hugging Face](https://huggingface.co/cccmmmzzz/metis-brain-signal-foundation-model).
+- 📰 **[Sep. 3, 2026]** **Advanced Portfolio** featured METIS on its WeChat Official Account. [Read the article in Chinese](https://mp.weixin.qq.com/s/o8GsjuYzucea4l6lJ35LbA).
+- 🤗 **[Jul. 28, 2026]** The METIS checkpoint is available on [Hugging Face](https://huggingface.co/cccmmmzzz/metis-brain-signal-foundation-model).
+- 📄 **[Jul. 23, 2026]** Our METIS paper was published in *Advanced Intelligent Systems*. [Read the paper](https://doi.org/10.1002/aisy.70486).
 
 ## Overview
 
